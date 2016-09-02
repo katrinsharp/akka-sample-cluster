@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-frontend
+  labels:
+    name: cluster-frontendd
+    app: akka-sample-cluster
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: cluster-frontend
+      labels:
+        app: akka-sample-cluster
+    spec:
+      containers:
+      - name: cluster-frontend
+        image: gcr.io/test1-1384/sources
+        command:
+          - ./bin/activator
+          - "runMain sample.cluster.factorial.Frontend"
+        env:
+          - name: SEED_DISCOVERY_SERVICE
+            value: discovery-svc.default.svc.cluster.local
+          - name: THIS_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: SEED_PORT
+            value: "2551"
