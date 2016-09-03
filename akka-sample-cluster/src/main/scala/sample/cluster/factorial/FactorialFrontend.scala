@@ -45,17 +45,28 @@ class FactorialFrontend(upToN: Int, repeat: Boolean) extends Actor with ActorLog
 object FactorialFrontend {
   def main(args: Array[String]): Unit = {
 
-    val upToN = if (args.isEmpty) 10 else args(0).toInt
-    val repeat = if (args.isEmpty) true else args(0) == 't'
+    val (upToN, repeat) = args.size match {
+      case 0 => (10, true)
+      case 1 => (args(0).toInt, true)
+      case 2 => (args(0).toInt, args(1) == "true")
+      case x =>
+        println("Format: ...FactorialFrontend 'upToN' 'repeat'")
+        System.exit(0)
+    }
 
     val internalIp = NetworkConfig.hostLocalAddress
 
+    val appConfig = ConfigFactory.load("factorial")
+    val clusterName = appConfig.getString("clustering.name")
+    val minMembers = appConfig.getNumber("akka.cluster.min-nr-of-members")
+
     val config = ConfigFactory.parseString("akka.cluster.roles = [frontend]").
       withFallback(ConfigFactory.parseString(s"akka.remote.netty.tcp.bind-hostname=$internalIp")).
-      withFallback(ConfigFactory.load("factorial"))
+      withFallback(NetworkConfig.seedsConfig(appConfig, clusterName)).
+      withFallback(appConfig)
 
-    val system = ActorSystem(config.getString("clustering.name"), config)
-    system.log.info("Factorials will start when 2 backend members in the cluster.")
+    val system = ActorSystem(clusterName, config)
+    system.log.info(s"Factorials will start when $minMembers backend members in the cluster.")
     //#registerOnUp
     Cluster(system) registerOnMemberUp {
       system.actorOf(Props(classOf[FactorialFrontend], upToN, repeat),
