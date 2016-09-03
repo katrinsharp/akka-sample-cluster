@@ -29,10 +29,11 @@ Substitute `192.168.99.100` with IP of your Docker machine (`docker-machine env`
 ### Pushing images to GKE: [doc](https://cloud.google.com/container-registry/docs/pushing)
 
 In my case:
-`docker tag sources gcr.io/test1-1384/sources`
-`gcloud docker push gcr.io/test1-1384/sources`
+```docker tag sources gcr.io/test1-1384/sources```
+```gcloud docker push gcr.io/test1-1384/sources```
 
-Note: Don't forget to change images in yaml files to what you've pushed to GKE registry.
+
+Note: Don't forget to change image names in yaml files to what you're really pushing to GKE registry.
 
 ### Creating GKE cluster: [doc](https://cloud.google.com/container-engine/docs/clusters/operations)
 
@@ -47,27 +48,27 @@ Note: Don't forget to change to your cluster's name
 
 ### Deployments: *.yaml files in the root directory should be copied to Google Cloud shell
 
-`kubectl create -f discovery-svc.yaml`
+```kubectl create -f discovery-svc.yaml```
 
-`kubectl create -f backend-seed.yaml`
+```kubectl create -f backend-seed.yaml```
 
-`kubectl create -f frontend.yaml`
+```kubectl create -f frontend.yaml```
 
 Note: the deployments are set to have replicas=0
 
 To start up the cluster:
 
-`kubectl scale --replicas=2 deployment/cluster-backend-seed`
+```kubectl scale --replicas=2 deployment/cluster-backend-seed```
 
-`kubectl scale --replicas=1 deployment/cluster-frontend`
+```kubectl scale --replicas=1 deployment/cluster-frontend```
 
 ### Seed nodes and dynamic IPs
 
-For node in Akka Cluster to be able to join it, it should know its seed nodes ips and ports. When ports could be fixed, ips in K8S are dynamic.
+In order to be able to join for node in Akka Cluster, it should know cluster seed nodes IPs and ports. When ports could be fixed, IPs in K8S are dynamic.
 
 To provide dynamic discovery for seed nodes you can use etcd, ConstructR or K8S built-in headless service functionality. This project uses headless service approach. The idea of this approach is to create a [headless service](http://kubernetes.io/docs/user-guide/services/#headless-services) and set `spec.clusterIP` to `None`. Selector for this service in my case (`discovery-svc.yaml` in root directory) is
 ```selector:
         name: seed-node
 ```
 
-And associated selector in spec in `backend-seed.yaml` is `seed-node`. So when you deploy first discovery service and then backend seed nodes, all pods created from backend-seed.yaml deployment will show up as IPs associated with `discovery-svc.default.svc.cluster.local`. 
+And associated selector in spec in `backend-seed.yaml` is `seed-node`. So when you first deploy discovery service and then backend seed nodes, all pods created from backend-seed.yaml deployment will show up as IPs associated with `discovery-svc.default.svc.cluster.local` domain. That's how each seed node finds all previously registered currently running seed nodes' IPs, same mechanism applies to regular non-seed nodes as well.
