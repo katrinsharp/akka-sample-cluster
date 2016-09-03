@@ -12,7 +12,6 @@ spec:
       name: cluster-backend-seed
       labels:
         name: seed-node
-        app: akka-sample-cluster
     spec:
       containers:
       - name: cluster-backend-seed

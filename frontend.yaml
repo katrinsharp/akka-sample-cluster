@@ -3,22 +3,22 @@ kind: Deployment
 metadata:
   name: cluster-frontend
   labels:
-    name: cluster-frontendd
+    name: cluster-frontend
     app: akka-sample-cluster
 spec:
-  replicas: 1
+  replicas: 0
   template:
     metadata:
       name: cluster-frontend
-      labels:
-        app: akka-sample-cluster
+      labels: 
+	name: frontend-node
     spec:
       containers:
       - name: cluster-frontend
         image: gcr.io/test1-1384/sources
         command:
           - ./bin/activator
-          - "runMain sample.cluster.factorial.Frontend"
+          - "runMain sample.cluster.factorial.FactorialFrontend 5 t"
         env:
           - name: SEED_DISCOVERY_SERVICE
             value: discovery-svc.default.svc.cluster.local
