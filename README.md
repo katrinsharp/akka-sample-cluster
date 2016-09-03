@@ -13,6 +13,8 @@ docker build -t sources -f Dockerfile-sources .
 ## Running locally in Docker on mac:
 
 ```
+cd akka-sample-cluster
+
 docker run -d -it -e "THIS_IP=192.168.99.100" -e "AKKA_SAMPLE_THIS_PORT=2551" -e "AKKA_SAMPLE_SEED_IP_1=192.168.99.100" -e "AKKA_SAMPLE_SEED_PORT_1=2551" -e "AKKA_SAMPLE_SEED_IP_2=192.168.99.100" -e "AKKA_SAMPLE_SEED_PORT_2=2552" -p "2551:2551"  --name akka-sample-backend-1 sources ./bin/activator "runMain sample.cluster.factorial.FactorialBackend"
 
 docker run -d -it -e "THIS_IP=192.168.99.100" -e "AKKA_SAMPLE_THIS_PORT=2552" -e "AKKA_SAMPLE_SEED_IP_1=192.168.99.100" -e "AKKA_SAMPLE_SEED_PORT_1=2551" -e "AKKA_SAMPLE_SEED_IP_2=192.168.99.100" -e "AKKA_SAMPLE_SEED_PORT_2=2552" -p "2552:2552"  --name akka-sample-backend-2 sources ./bin/activator "runMain sample.cluster.factorial.FactorialBackend"
